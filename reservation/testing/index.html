@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Room Availability</title>
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <form id="roomForm" class="form">
+            <label for="startDate" class="form-label">Start Date:</label>
+            <input type="date" name="startDate" id="startDate" class="form-control" required>
+            <br>
+            <label for="endDate" class="form-label">End Date:</label>
+            <input type="date" name="endDate" id="endDate" class="form-control" required>
+            <br>
+            <button type="submit" class="btn btn-danger">Check Availability</button>
+        </form>
+        <select name="roomType" id="roomType" class="form-control">
+        </select>
+        <select name="roomNo" id="roomNo" class="form-control">
+        </select>
+        <span id="selectedRoomNumber"></span>
+        <input type="text" name="roomRate" id="roomRate">
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("startDate").addEventListener("DOMContentLoaded", function () {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            var yyyy = today.getFullYear();
+            today = yyyy + '-' + mm + '-' + dd;
+
+            // Set the min attribute of the input date tag to today's date
+            document.getElementById("startDate").setAttribute("min", today);
+        });
+
+        document.getElementById("roomForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            var startDate = document.getElementById("startDate").value;
+            var endDate = document.getElementById("endDate").value;
+            var roomType = document.getElementById("roomType").value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "check_availability.php?startDate=" + startDate + "&endDate=" + endDate + "&roomType=" + roomType + "&_=" + new Date().getTime(), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    var result = JSON.parse(xhr.responseText);
+
+                    // Populate the room type select tag
+                    const roomTypes = [...new Set(result.map(room => room["Room Type"]))];
+                    const roomTypeSelect = document.getElementById("roomType");
+                    roomTypeSelect.innerHTML = "";
+                    roomTypes.forEach(roomType => {
+                        const option = document.createElement("option");
+                        option.value = roomType;
+                        option.textContent = roomType;
+                        roomTypeSelect.appendChild(option);
+                    });
+
+                    // Populate the room number select tag based on the selected room type
+                    updateRoomNumberSelect(result, roomType);
+                }
+            };
+            xhr.send();
+        });
+
+        // Add an event listener to the room type select tag to update the room number select tag
+        document.getElementById("roomType").addEventListener("change", function () {
+            var roomType = this.value;
+            var startDate = document.getElementById("startDate").value;
+            var endDate = document.getElementById("endDate").value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "check_availability.php?startDate=" + startDate + "&endDate=" + endDate + "&roomType=" + roomType + "&_=" + new Date().getTime(), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    var result = JSON.parse(xhr.responseText);
+
+                    // Populate the room number select tag based on the selected room type
+                    updateRoomNumberSelect(result, roomType);
+                }
+            };
+            xhr.send();
+        });
+
+        // Add an event listener to the room number select tag to display the selected room number
+        document.getElementById("roomNo").addEventListener("change", function () {
+            const selectedRoomNumber = document.getElementById("selectedRoomNumber");
+            if (this.value) {
+                selectedRoomNumber.textContent = "Selected room: " + this.value;
+            } else {
+                selectedRoomNumber.textContent = "";
+            }
+        });
+
+        function updateRoomNumberSelect(rooms, selectedRoomType) {
+            const filteredRooms = rooms.filter(room => room["Room Type"] === selectedRoomType);
+            const roomNumberSelect = document.getElementById("roomNo");
+            const roomRateInput = document.getElementById("roomRate");
+
+            // Clear the room number select tag and room rate input field
+            roomNumberSelect.innerHTML = "";
+            roomRateInput.value = "";
+
+            // Populate the room number select tag with filtered rooms
+            filteredRooms.forEach(room => {
+                const option = document.createElement("option");
+                option.value = room["Room No"];
+                option.textContent = room["Room No"];
+                roomNumberSelect.appendChild(option);
+            });
+
+            // Display the selected room number if one is selected
+            const selectedRoomNumber = document.getElementById("selectedRoomNumber");
+            if (roomNumberSelect.value) {
+                selectedRoomNumber.textContent = "Selected room: " + roomNumberSelect.value;
+            } else {
+                selectedRoomNumber.textContent = "";
+            }
+
+            // Add change event listener to the room number select tag
+            roomNumberSelect.addEventListener("change", function () {
+                const selectedRoom = filteredRooms.find(room => room["Room No"] === roomNumberSelect.value);
+                if (selectedRoom) {
+                    roomRateInput.value = selectedRoom["Room Rate"];
+                } else {
+                    roomRateInput.value = "";
+                }
+            });
+        }
+
+        document.getElementById("startDate").addEventListener("change", function () {
+            resetRoomSelection();
+        });
+
+        document.getElementById("endDate").addEventListener("change", function () {
+            resetRoomSelection();
+        });
+
+        function resetRoomSelection() {
+            document.getElementById("roomType").selectedIndex = 0;
+            document.getElementById("roomNo").selectedIndex = 0;
+            document.getElementById("roomType").innerHTML = "";
+            document.getElementById("roomNo").innerHTML = "";
+            document.getElementById("selectedRoomNumber").textContent = "";
+        }
+    </script>
+</body>
+
+</html>

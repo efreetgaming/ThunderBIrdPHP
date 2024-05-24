@@ -1,0 +1,34 @@
+Thunderbird Resources
+
+Download the Minified Version for Performance and Space
+
+Magnific-Popup
+- https://dimsemenov.com/plugins/magnific-popup/documentation.html
+
+Date Range Picker
+- https://www.daterangepicker.com/
+
+Bootstrap
+- https://github.com/twbs/bootstrap/releases/download/v5.3.3/bootstrap-5.3.3-dist.zip
+
+Swiper
+- https://swiperjs.com/
+
+
+
+
+
+
+(When Reserving Rooms)
+
+- When Reserving rooms the default date would be the date today to tomorrow this will check the date if there is an available room in the date range the user pick 
+	+ If user picked the room but someone already reserve the room. The select button for the room would be 	disabled
+
+	+ User can only pick the room if there is no one reserve the room in a specific day and range of staying
+
+	+ If the there is no available room in the date of range user can access the find available dates where user 	can click to find a specific date that the room is available, if the specific date picked by the user is 	available then user can select it
+
+- Admin can give discount to the user by promos depending on time like summer weeken promo and so on
+	+ Admin can change the discount rate per room depending on the promo offered
+	
+	+ The original price of the room will be calculated depending on how much the admin give a discount 
